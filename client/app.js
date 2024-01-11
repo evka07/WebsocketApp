@@ -5,6 +5,10 @@ const addMessageForm = document.querySelector('#add-messages-form');
 const userNameInput = loginForm.querySelector('#username');
 const messageContentInput = addMessageForm.querySelector('#message-content');
 
+const socket = io();
+
+socket.on('message', ({ author, content }) => addMessage(author, content));
+socket.on('login', ({ userName }) => login(userName));
 let userName = '';
 
 const login = e => {
@@ -13,6 +17,7 @@ const login = e => {
     userName = userNameInput.value;
     loginForm.classList.remove('show');
     mesagesSection.classList.add('show');
+    socket.emit('login', { author: userName });
   } else alert('We need to know your name before you can join');
 };
 
@@ -23,11 +28,13 @@ const addMessage = (author, content) => {
     ? message.classList.add('message--received')
     : message.classList.add('message--self');
 
+  author === 'Chat Bot' ? message.classList.add('message--info') : '';
+
   message.innerHTML = `
-    <h3 class='message__author'>${userName === author ? 'You' : author}</h3>
-    <div class='message__content'>
-    ${content}
-    </div>
+  <h3 class='message__author'>${userName === author ? 'You' : author}</h3>
+  <div class='message__content'>
+  ${content}
+  </div>
   `;
   messagesList.appendChild(message);
 };
@@ -35,8 +42,11 @@ const addMessage = (author, content) => {
 const sendMessage = e => {
   e.preventDefault();
 
-  if (messageContentInput.value !== '') {
-    addMessage(userName, messageContentInput.value);
+  let messageContent = messageContentInput.value;
+
+  if (messageContent !== '') {
+    addMessage(userName, messageContent);
+    socket.emit('message', { author: userName, content: messageContent });
     messageContentInput.value = '';
   } else {
     alert(

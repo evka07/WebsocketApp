@@ -77,6 +77,10 @@ p {
 .message--self {
   align-items: flex-end;
 }
+.message--info div {
+  font-style: italic;
+  color: yellow;
+}
 
 .message--received {
   animation: fadeIn;
